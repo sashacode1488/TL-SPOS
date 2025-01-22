@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Sys = Cosmos.System;
 using System.Collections.Generic;
 
@@ -12,6 +12,14 @@ namespace TLSPOS
         protected override void BeforeRun()
         {
             Console.Clear();
+            Console.WriteLine("######## ##         ####     ######  ########   #######   ######");
+            Console.WriteLine("   ##    ##        ##  ##   ##    ## ##     ## ##     ## ##    ##");
+            Console.WriteLine("   ##    ##         ####    ##       ##     ## ##     ## ##");
+            Console.WriteLine("   ##    ##        ####      ######  ########  ##     ##  ######");
+            Console.WriteLine("   ##    ##       ##  ## ##       ## ##        ##     ##       ##");
+            Console.WriteLine("   ##    ##       ##   ##   ##    ## ##        ##     ## ##    ##");
+            Console.WriteLine("   ##    ########  ####  ##  ######  ##         #######   ######");
+
             Console.WriteLine("Welcome to TL&SPOS!");
             Console.WriteLine("Type 'help' for a list of commands.");
         }
@@ -130,6 +138,12 @@ namespace TLSPOS
                     else
                         Console.WriteLine("Please specify the file names (old and new).");
                     break;
+                case "ttt":
+                    PlayTicTacToe();
+                    break;
+                case "snake":
+                    PlaySnake();
+                    break;
                 default:
                     var originalColor = Console.ForegroundColor;
                     Console.ForegroundColor = ConsoleColor.Red;
@@ -161,6 +175,8 @@ namespace TLSPOS
             Console.WriteLine(" rmf - Remove a folder and its contents");
             Console.WriteLine(" rnf - Rename a folder (Usage: rnf oldFolder newFolder)");
             Console.WriteLine(" rntxt - Rename a text file (Usage: rntxt oldFile newFile)");
+            Console.WriteLine(" ttt - Play Tic-Tac-Toe (2 Players)");
+            Console.WriteLine(" snake - Play snake game)");
         }
 
         private void EchoCommand()
@@ -433,6 +449,259 @@ namespace TLSPOS
             {
                 Console.WriteLine("Invalid folder rename command format.");
             }
+        }
+
+        private void PlayTicTacToe()
+        {
+            char[] board = { '1', '2', '3', '4', '5', '6', '7', '8', '9' };
+            int player = 1; // 1 -> Player 1, 2 -> Player 2
+            int choice;
+            int flag = 0;
+
+            do
+            {
+                Console.Clear();
+                Console.WriteLine("Player 1: X and Player 2: O");
+                Console.WriteLine("\n");
+                if (player % 2 == 0)
+                {
+                    Console.WriteLine("Turn Player 2");
+                }
+                else
+                {
+                    Console.WriteLine("Turn Player 1");
+                }
+                Console.WriteLine("\n");
+                Board(board);
+                choice = int.Parse(Console.ReadLine());
+
+                if (board[choice - 1] != 'X' && board[choice - 1] != 'O')
+                {
+                    if (player % 2 == 0)
+                    {
+                        board[choice - 1] = 'O';
+                        player++;
+                    }
+                    else
+                    {
+                        board[choice - 1] = 'X';
+                        player++;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("The row {0} is already marked with an X or O", choice);
+                    Console.WriteLine("\n");
+                    Console.WriteLine("Please wait 2 seconds board is loading again.....");
+                    System.Threading.Thread.Sleep(2000);
+                }
+                flag = CheckWin(board);
+            }
+            while (flag != 1 && flag != -1);
+
+            Console.Clear();
+            Board(board);
+
+            if (flag == 1)
+            {
+                Console.WriteLine("Player {0} has won!", (player % 2) + 1);
+            }
+            else
+            {
+                Console.WriteLine("Draw");
+            }
+        }
+
+        private void Board(char[] board)
+        {
+            Console.WriteLine("     |     |      ");
+            Console.WriteLine("  {0}  |  {1}  |  {2}", board[0], board[1], board[2]);
+            Console.WriteLine("_____|_____|_____ ");
+            Console.WriteLine("     |     |      ");
+            Console.WriteLine("  {0}  |  {1}  |  {2}", board[3], board[4], board[5]);
+            Console.WriteLine("_____|_____|_____ ");
+            Console.WriteLine("     |     |      ");
+            Console.WriteLine("  {0}  |  {1}  |  {2}", board[6], board[7], board[8]);
+            Console.WriteLine("     |     |      ");
+        }
+
+        private int CheckWin(char[] board)
+        {
+            #region Horizontal Winning Condition
+            // Winning Condition For First Row
+            if (board[0] == board[1] && board[1] == board[2])
+            {
+                return 1;
+            }
+            // Winning Condition For Second Row
+            else if (board[3] == board[4] && board[4] == board[5])
+            {
+                return 1;
+            }
+            // Winning Condition For Third Row
+            else if (board[6] == board[7] && board[7] == board[8])
+            {
+                return 1;
+            }
+            #endregion
+
+            #region Vertical Winning Condition
+            // Winning Condition For First Column
+            else if (board[0] == board[3] && board[3] == board[6])
+            {
+                return 1;
+            }
+            // Winning Condition For Second Column
+            else if (board[1] == board[4] && board[4] == board[7])
+            {
+                return 1;
+            }
+            // Winning Condition For Third Column
+            else if (board[2] == board[5] && board[5] == board[8])
+            {
+                return 1;
+            }
+            #endregion
+
+            #region Diagonal Winning Condition
+            else if (board[0] == board[4] && board[4] == board[8])
+            {
+                return 1;
+            }
+            else if (board[2] == board[4] && board[4] == board[6])
+            {
+                return 1;
+            }
+            #endregion
+
+            // Checking For Draw
+            // If all cells are filled with X or O then no player has won
+            else if (board[0] != '1' && board[1] != '2' && board[2] != '3' && board[3] != '4' && board[4] != '5' && board[5] != '6' && board[6] != '7' && board[7] != '8' && board[8] != '9')
+            {
+                return -1;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+
+        private void PlaySnake()
+        {
+            int width = 20;
+            int height = 20;
+            int[] snakeX = new int[50];
+            int[] snakeY = new int[50];
+            int foodX = new Random().Next(1, width - 1);
+            int foodY = new Random().Next(1, height - 1);
+            int snakeLength = 3;
+            int score = 0;
+            string direction = "right";
+
+            // Initialize snake position
+            for (int i = 0; i < snakeLength; i++)
+            {
+                snakeX[i] = 10 - i;
+                snakeY[i] = 10;
+            }
+
+            ConsoleKeyInfo keyInfo;
+            do
+            {
+                Console.Clear();
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        if (x == 0 || x == width - 1 || y == 0 || y == height - 1)
+                        {
+                            Console.Write("#");
+                        }
+                        else if (x == foodX && y == foodY)
+                        {
+                            Console.Write("O");
+                        }
+                        else
+                        {
+                            bool isSnake = false;
+                            for (int i = 0; i < snakeLength; i++)
+                            {
+                                if (snakeX[i] == x && snakeY[i] == y)
+                                {
+                                    Console.Write("S");
+                                    isSnake = true;
+                                    break;
+                                }
+                            }
+                            if (!isSnake)
+                            {
+                                Console.Write(" ");
+                            }
+                        }
+                    }
+                    Console.WriteLine();
+                }
+
+                if (Console.KeyAvailable)
+                {
+                    keyInfo = Console.ReadKey(true);
+                    switch (keyInfo.Key)
+                    {
+                        case ConsoleKey.UpArrow:
+                            if (direction != "down") direction = "up";
+                            break;
+                        case ConsoleKey.DownArrow:
+                            if (direction != "up") direction = "down";
+                            break;
+                        case ConsoleKey.LeftArrow:
+                            if (direction != "right") direction = "left";
+                            break;
+                        case ConsoleKey.RightArrow:
+                            if (direction != "left") direction = "right";
+                            break;
+                    }
+                }
+
+                for (int i = snakeLength - 1; i > 0; i--)
+                {
+                    snakeX[i] = snakeX[i - 1];
+                    snakeY[i] = snakeY[i - 1];
+                }
+
+                switch (direction)
+                {
+                    case "up":
+                        snakeY[0]--;
+                        break;
+                    case "down":
+                        snakeY[0]++;
+                        break;
+                    case "left":
+                        snakeX[0]--;
+                        break;
+                    case "right":
+                        snakeX[0]++;
+                        break;
+                }
+
+                if (snakeX[0] == foodX && snakeY[0] == foodY)
+                {
+                    foodX = new Random().Next(1, width - 1);
+                    foodY = new Random().Next(1, height - 1);
+                    snakeLength++;
+                    score++;
+                }
+
+                if (snakeX[0] == 0 || snakeX[0] == width - 1 || snakeY[0] == 0 || snakeY[0] == height - 1)
+                {
+                    Console.Clear();
+                    Console.WriteLine("Game Over! Your score: " + score);
+                    break;
+                }
+
+                System.Threading.Thread.Sleep(100);
+            } while (true);
         }
 
         private void RenameTextFile(string fileNames)
