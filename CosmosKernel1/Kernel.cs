@@ -1,6 +1,9 @@
 using System;
 using Sys = Cosmos.System;
 using System.Collections.Generic;
+using Cosmos.System.Graphics;
+using System.Drawing;
+using Cosmos.System.Graphics.Fonts;
 
 namespace TLSPOS
 {
@@ -11,6 +14,8 @@ namespace TLSPOS
 
         protected override void BeforeRun()
         {
+
+
             Console.Clear();
             Console.WriteLine("######## ##         ####     ######  ########   #######   ######");
             Console.WriteLine("   ##    ##        ##  ##   ##    ## ##     ## ##     ## ##    ##");
@@ -144,6 +149,9 @@ namespace TLSPOS
                 case "snake":
                     PlaySnake();
                     break;
+                case "penguin":
+                    PenguinCommand();
+                    break;
                 default:
                     var originalColor = Console.ForegroundColor;
                     Console.ForegroundColor = ConsoleColor.Red;
@@ -262,16 +270,68 @@ namespace TLSPOS
 
         private void ReadTextFile(string fileName)
         {
+            Console.Clear(); // Clear the console before displaying the content
+
             string path = GetFullPath(fileName);
             if (virtualFileSystem.ContainsKey(path) && virtualFileSystem[path] != null)
             {
-                Console.WriteLine($"Reading file: {fileName}");
-                Console.WriteLine($"Content: {virtualFileSystem[path]}");
+                Console.WriteLine("                            TL&SPOS Read Program");
+                Console.WriteLine("|------------------------------------------------------------------|");
+
+                string content = virtualFileSystem[path];
+                string[] lines = content.Split(new[] { '\n' }, StringSplitOptions.None);
+
+                foreach (string line in lines)
+                {
+                    Console.WriteLine($"|{line.PadRight(66)}|");
+                }
+
+                Console.WriteLine("|-------------------------------------------------------------------|");
+                Console.WriteLine("Note: To exit TL&SPOS Read Program press ESC");
+
+                // Wait for the ESC key to be pressed
+                while (true)
+                {
+                    if (Console.KeyAvailable)
+                    {
+                        var key = Console.ReadKey(true).Key;
+                        if (key == ConsoleKey.Escape)
+                        {
+                            break; // Exit the loop if ESC is pressed
+                        }
+                    }
+                }
+
+                Console.Clear(); // Clear the console after exiting the read program
             }
             else
             {
                 Console.WriteLine($"File '{fileName}' does not exist in memory or is a folder.");
             }
+        }
+
+        private void PenguinCommand()
+        {
+            Console.Clear();
+            Console.WriteLine("       .-.");
+            Console.WriteLine("       oo|");
+            Console.WriteLine("      /`'\\");
+            Console.WriteLine("     (\\_;/)");
+            Console.WriteLine("Congratulations! You found an Easter egg with a tux!");
+            // Wait for the ESC key to be pressed
+            Console.WriteLine("Press ESC to return to the command prompt.");
+            while (true)
+            {
+                if (Console.KeyAvailable)
+                {
+                    var key = Console.ReadKey(true).Key;
+                    if (key == ConsoleKey.Escape)
+                    {
+                        break; // Exit the loop if ESC is pressed
+                    }
+                }
+            }
+            Console.Clear(); // Clear the console after exiting the read program
         }
 
         private void ListFiles()
@@ -703,6 +763,8 @@ namespace TLSPOS
                 System.Threading.Thread.Sleep(100);
             } while (true);
         }
+
+
 
         private void RenameTextFile(string fileNames)
         {
