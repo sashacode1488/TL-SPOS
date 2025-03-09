@@ -16,5 +16,5 @@ While it doesn’t aim to compete with mainstream operating systems, TL&SPOS pro
 # Screenshot 3
 ![Screenshot 3](s3.png)
 
-# Sadly but TL&SPOS Is end of support
-The author switched to Linux so the author can no longer support the OS
+# Goodbye TL&SPOS
+Sadly but TL&SPOS Is end of support. The author switched to Linux so the author can no longer support the OS
