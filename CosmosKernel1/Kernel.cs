@@ -3,7 +3,7 @@ using Sys = Cosmos.System;
 using System.Collections.Generic;
 using Cosmos.System.Graphics;
 using System.Drawing;
-using Cosmos.System.Graphics.Fonts;
+using System.Linq;
 
 namespace TLSPOS
 {
@@ -16,6 +16,8 @@ namespace TLSPOS
         {
 
 
+            Console.Clear();
+            AnimateBoot();
             Console.Clear();
             Console.WriteLine("######## ##         ####     ######  ########   #######   ######");
             Console.WriteLine("   ##    ##        ##  ##   ##    ## ##     ## ##     ## ##    ##");
@@ -149,9 +151,6 @@ namespace TLSPOS
                 case "snake":
                     PlaySnake();
                     break;
-                case "penguin":
-                    PenguinCommand();
-                    break;
                 default:
                     var originalColor = Console.ForegroundColor;
                     Console.ForegroundColor = ConsoleColor.Red;
@@ -255,83 +254,167 @@ namespace TLSPOS
             string path = GetFullPath(fileName);
             if (virtualFileSystem.ContainsKey(path) && virtualFileSystem[path] != null)
             {
-                Console.WriteLine($"Editing file: {fileName}");
-                Console.WriteLine($"Current content: {virtualFileSystem[path]}");
-                Console.Write("Enter new content: ");
-                string newContent = Console.ReadLine();
-                virtualFileSystem[path] = newContent;
-                Console.WriteLine($"File '{fileName}' updated successfully in memory.");
+                Console.Clear();
+                List<string> lines = new List<string>();
+
+                // Initialize with existing content
+                if (!string.IsNullOrEmpty(virtualFileSystem[path]))
+                {
+                    lines.AddRange(virtualFileSystem[path].Split('\n'));
+                }
+                else
+                {
+                    lines.Add("");
+                }
+
+                int currentLine = 0;
+                int currentColumn = lines[0].Length;
+                bool editing = true;
+
+                while (editing)
+                {
+                    Console.Clear();
+                    // Draw header
+                    Console.WriteLine($"                                                            TL&SPOS EDITOR");
+
+                    // Display content with line numbers
+                    for (int i = 0; i < 20; i++) // Show max 20 lines
+                    {
+                        if (i < lines.Count)
+                        {
+                            Console.Write($"|{lines[i]}");
+                        }
+                        else
+                        {
+                            Console.Write("|");
+                        }
+                        Console.WriteLine();
+                    }
+
+                    // Draw footer
+                    Console.WriteLine("|-----------------------------------------------------------------------|");
+                    Console.WriteLine("Note: To save press F2, To exit press ESC, To make new line press ENTER");
+
+                    // Handle key input
+                    var key = Console.ReadKey(true);
+
+                    switch (key.Key)
+                    {
+                        case ConsoleKey.Enter:
+                            // Insert new line
+                            string currentLineText = lines[currentLine];
+                            string restOfLine = currentLineText.Substring(currentColumn);
+                            lines[currentLine] = currentLineText.Substring(0, currentColumn);
+                            lines.Insert(currentLine + 1, restOfLine);
+                            currentLine++;
+                            currentColumn = 0;
+                            break;
+
+                        case ConsoleKey.Backspace:
+                            if (currentColumn > 0)
+                            {
+                                lines[currentLine] = lines[currentLine].Remove(currentColumn - 1, 1);
+                                currentColumn--;
+                            }
+                            else if (currentLine > 0)
+                            {
+                                // Merge with previous line
+                                currentColumn = lines[currentLine - 1].Length;
+                                lines[currentLine - 1] += lines[currentLine];
+                                lines.RemoveAt(currentLine);
+                                currentLine--;
+                            }
+                            break;
+
+                        case ConsoleKey.LeftArrow:
+                            if (currentColumn > 0)
+                            {
+                                currentColumn--;
+                            }
+                            else if (currentLine > 0)
+                            {
+                                currentLine--;
+                                currentColumn = lines[currentLine].Length;
+                            }
+                            break;
+
+                        case ConsoleKey.RightArrow:
+                            if (currentColumn < lines[currentLine].Length)
+                            {
+                                currentColumn++;
+                            }
+                            else if (currentLine < lines.Count - 1)
+                            {
+                                currentLine++;
+                                currentColumn = 0;
+                            }
+                            break;
+
+                        case ConsoleKey.UpArrow:
+                            if (currentLine > 0)
+                            {
+                                currentLine--;
+                                currentColumn = Math.Min(currentColumn, lines[currentLine].Length);
+                            }
+                            break;
+
+                        case ConsoleKey.DownArrow:
+                            if (currentLine < lines.Count - 1)
+                            {
+                                currentLine++;
+                                currentColumn = Math.Min(currentColumn, lines[currentLine].Length);
+                            }
+                            break;
+
+                        case ConsoleKey.Escape:
+                            editing = false;
+                            break;
+
+                        case ConsoleKey.F2:
+                            // Save the file
+                            virtualFileSystem[path] = string.Join("\n", lines.ToArray());
+                            Console.WriteLine($"\nFile '{fileName}' saved successfully!");
+                            System.Threading.Thread.Sleep(1000);
+                            break;
+
+                        default:
+                            if (!char.IsControl(key.KeyChar))
+                            {
+                                lines[currentLine] = lines[currentLine].Insert(currentColumn, key.KeyChar.ToString());
+                                currentColumn++;
+                            }
+                            break;
+                    }
+                }
             }
             else
             {
-                Console.WriteLine($"File '{fileName}' does not exist in memory or is a folder.");
+                Console.WriteLine($"File '{fileName}' does not exist in memory or is not a file.");
             }
         }
 
         private void ReadTextFile(string fileName)
         {
-            Console.Clear(); // Clear the console before displaying the content
-
             string path = GetFullPath(fileName);
             if (virtualFileSystem.ContainsKey(path) && virtualFileSystem[path] != null)
             {
-                Console.WriteLine("                            TL&SPOS Read Program");
-                Console.WriteLine("|------------------------------------------------------------------|");
+                Console.Clear();
+                Console.WriteLine($"                                                            TL&SPOS READER");
 
-                string content = virtualFileSystem[path];
-                string[] lines = content.Split(new[] { '\n' }, StringSplitOptions.None);
-
+                string[] lines = virtualFileSystem[path].Split('\n');
                 foreach (string line in lines)
                 {
-                    Console.WriteLine($"|{line.PadRight(66)}|");
+                    Console.WriteLine($"|{line}");
                 }
 
-                Console.WriteLine("|-------------------------------------------------------------------|");
-                Console.WriteLine("Note: To exit TL&SPOS Read Program press ESC");
-
-                // Wait for the ESC key to be pressed
-                while (true)
-                {
-                    if (Console.KeyAvailable)
-                    {
-                        var key = Console.ReadKey(true).Key;
-                        if (key == ConsoleKey.Escape)
-                        {
-                            break; // Exit the loop if ESC is pressed
-                        }
-                    }
-                }
-
-                Console.Clear(); // Clear the console after exiting the read program
+                Console.WriteLine("|-----------------------------------------------------------------------|");
+                Console.WriteLine("Press any key to exit...");
+                Console.ReadKey(true);
             }
             else
             {
-                Console.WriteLine($"File '{fileName}' does not exist in memory or is a folder.");
+                Console.WriteLine($"File '{fileName}' does not exist in memory or is not a file.");
             }
-        }
-
-        private void PenguinCommand()
-        {
-            Console.Clear();
-            Console.WriteLine("       .-.");
-            Console.WriteLine("       oo|");
-            Console.WriteLine("      /`'\\");
-            Console.WriteLine("     (\\_;/)");
-            Console.WriteLine("Congratulations! You found an Easter egg with a tux!");
-            // Wait for the ESC key to be pressed
-            Console.WriteLine("Press ESC to return to the command prompt.");
-            while (true)
-            {
-                if (Console.KeyAvailable)
-                {
-                    var key = Console.ReadKey(true).Key;
-                    if (key == ConsoleKey.Escape)
-                    {
-                        break; // Exit the loop if ESC is pressed
-                    }
-                }
-            }
-            Console.Clear(); // Clear the console after exiting the read program
         }
 
         private void ListFiles()
@@ -763,6 +846,38 @@ namespace TLSPOS
                 System.Threading.Thread.Sleep(100);
             } while (true);
         }
+
+        private void AnimateBoot()
+        {
+            string[] logo = {
+        "######## ##         ####     ######  ########   #######   ######",
+        "   ##    ##        ##  ##   ##    ## ##     ## ##     ## ##    ##",
+        "   ##    ##         ####    ##       ##     ## ##     ## ##",
+        "   ##    ##        ####      ######  ########  ##     ##  ######",
+        "   ##    ##       ##  ## ##       ## ##        ##     ##       ##",
+        "   ##    ##       ##   ##   ##    ## ##        ##     ## ##    ##",
+        "   ##    ########  ####  ##  ######  ##         #######   ######"
+    };
+
+            int maxLength = logo.Max(line => line.Length);
+            string[] buffer = new string[logo.Length];
+            for (int i = 0; i < maxLength; i++)
+            {
+                Console.Clear();
+                for (int j = 0; j < logo.Length; j++)
+                {
+                    if (i < logo[j].Length)
+                        buffer[j] += logo[j][i];
+                    Console.WriteLine(buffer[j]);
+                }
+                System.Threading.Thread.Sleep(50);
+            }
+
+            Console.WriteLine("\nBoot completed! Welcome to TL&SPOS!");
+            Console.WriteLine("Press any key to start working!");
+            Console.ReadKey();
+        }
+
 
 
 
